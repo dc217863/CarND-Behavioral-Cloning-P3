@@ -15,7 +15,6 @@ from io import BytesIO
 from keras.models import load_model
 import h5py
 from keras import __version__ as keras_version
-import matplotlib.pyplot as plt
 
 sio = socketio.Server()
 app = Flask(__name__)
@@ -66,7 +65,7 @@ def telemetry(sid, data):
 
         throttle = controller.update(float(speed))
 
-        print(steering_angle, throttle)
+        print("Steering: {}, throttle: {}".format(steering_angle, throttle))
         send_control(steering_angle, throttle)
 
         # save frame
