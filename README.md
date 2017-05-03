@@ -1,4 +1,4 @@
-#**Behavioral Cloning** 
+#**Behavioral Cloning**
 
 ##Project Writeup
 
@@ -19,7 +19,10 @@ The goals / steps of this project are the following:
 [image1]: ./examples/nvidia_model.png "NVidia Model Visualization"
 [image2]: ./examples/model_summary.png "Model Summary"
 [image3]: ./examples/st_angle_hist.png "Steering Angle Histogram"
-[image4]: ./examples/crop_example.jpg "Crop Example"
+[image4]: ./examples/flip_example.png "Flipping images"
+[image5]: ./examples/brightness_changed.png "Brightness change examples"
+[image6]: ./examples/shift_example.png "Shift angles examples"
+[image7]: ./examples/crop_example.jpg "Crop Example"
 
 ## Rubric Points
 ###Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -32,11 +35,11 @@ The goals / steps of this project are the following:
 My project includes the following files:
 * model.py containing the script to create and train the model
 * drive.py for communicating with the simulator. It receives the images for the neural net as input and sends the steering wheel angle and throttle as output.
-* model.h5 containing a trained convolution neural network 
+* model.h5 containing a trained convolution neural network
 * writeup_report.md summarizing the results
 
 ####2. Submission includes functional code
-Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
+Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing
 ```sh
 python drive.py model.h5
 ```
@@ -61,7 +64,9 @@ After cropping, the image has a shape of (80, 320, 3). There would be a possibil
 
 The model includes ELU layers after each convolutional or fully connected layer to introduce non-linearity. Using the standard RELU's as activation function has the disadvantage, that they can turn "dead", which means that they are never activated because the pre-activation value is always negative. The so called "Exponential Linear Unit" solves this problem, as for negative values it is a function bounded by a fixed value. In experiments, ELU units seem to learn faster and are preferred in many situations nowadays.
 
-For regularization, L1 or L2 is not used, instead I focussed on Dropout. Dropout with drop rates of 0.5 were used in the model. A high drop rate was possible as the number of images used for the training are considered enough to pull this through. A high drop rate was used to avoid overfitting to the lake track.
+For regularization, L1 or L2 is not used, instead I focussed on Dropout. Spatial Dropout was used after convolution layer as it gives better performance (as suggested here: http://cs.unc.edu/~eunbyung/papers/groupout.pdf). Dropout works better in the later stages of the model. 
+
+Dropout with drop rates of 0.5 were used in the later stages of the model. A high drop rate was possible as the number of images used for the training are considered enough to pull this through. A high drop rate was used to avoid overfitting to the lake track.
 
 In general, the NVIDIA model consists of strided convolutions in the first three convolutional layers with a 2×2 stride and a 5×5 kernel and a non-strided convolution
 with a 3×3 kernel size in the last two convolutional layers.The last neuron predicts the steering angle with no activation function at the end.
@@ -71,7 +76,7 @@ Summary of model:
 
 ####2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in order to reduce overfitting. 
+The model contains dropout layers in order to reduce overfitting.
 
 The model was trained and validated on different data sets to ensure that the model was not overfitting. The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
@@ -83,7 +88,7 @@ The model uses an adam optimizer, so the learning rate was not tuned manually. I
 
 Training data was chosen to keep the vehicle driving on the road. Only the data provided by Udacity was used to train the model. For each epoch, the data set was shuffled, and for each batch at the end, too.
 
-For details about how I created the training data, see the next section. 
+For details about how I created the training data, see the next section.
 
 ###Model Architecture and Training Strategy
 
@@ -99,7 +104,7 @@ The final step was to run the simulator to see how well the car was driving arou
 
 ####2. Creation of the Training Set & Training Process
 
-I randomly shuffled the data set and put 20% of the data into a validation set. 
+I randomly shuffled the data set and put 20% of the data into a validation set.
 
 I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 15 as the validation loss stayed constant or even increased in the subsequent epochs.
 
@@ -113,17 +118,23 @@ This shows the need for further data. Four different techniques were used for da
 
 Flipping mirrors the image around the y-axis. This is important, because the first track has a bias towards left turns, so the network could develop such a bias, too. Of course, the steering angle also has to be inverted, which is done by multiplying it with a negative value of -1.
 
+![Flipping Example][image4]
+
 For the brightness change, the color space is first converted from RGB to HSV. Then, a random factor for the change is created, which is in the range of 0.5 to 1.5. So some images will be darkened, and some brightened. This factor is used for multiplication with the value channel, and then the image is converted back to RGB.
+
+![Brightness change Example][image5]
 
 Finally, random shifting is also used. In x direction, the image is shift up to 50 pixel left or right. This also influences the angle, so a correction factor of 0.004 per shifted pixel is added. In y direction, the shift is -20 to 20 randomly.
 
+![Shifting angles Example][image6]
+
 Cropping was used in the model itself. Here is an example of an image fed into the model after cropping.
 
-![Cropping Example][image4]
+![Cropping Example][image7]
 
 ###Results
 
-The vehicle is able to drive along the lake course lap without leaving the lane. 
+The vehicle is able to drive along the lake course lap without leaving the lane.
 
 ###Future Prospects
 
